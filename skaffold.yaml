@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/jmlambert78/golang-on-kubic:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/jmlambert78/golang-on-kubic:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: golang-on-kubic
+        chartPath: charts/golang-on-kubic
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/jmlambert78/golang-on-kubic'
+          image.tag: '{{.DIGEST_HEX}}'
